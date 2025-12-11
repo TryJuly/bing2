@@ -6,7 +6,7 @@
 /*   By: strieste <strieste@student.42.ch>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/03 09:58:33 by cbezenco          #+#    #+#             */
-/*   Updated: 2025/12/10 12:11:35 by strieste         ###   ########.fr       */
+/*   Updated: 2025/12/10 18:34:48 by strieste         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@ int	main(int ac, char **av, char **envp)
 	(void)ac;
 	(void)av;
 	init_struct(&data, envp);
-	signal(SIGQUIT, SIG_IGN);
-	signal(SIGINT, sighandler);
-	signal(SIGSEGV, sigfin);
+	// signal(SIGQUIT, SIG_IGN);
+	// signal(SIGINT, sighandler);
+	// signal(SIGSEGV, sigfin);
 	read_prompt(&data);
 	ft_free_array(&data.path);
 	ft_free_array(&data.envp);
@@ -66,7 +66,7 @@ void	check_builtin(t_data *data, char **array)
 
 void	read_prompt(t_data *data)
 {
-	char	**array;
+	// char	**array;
 	
 	while (1)
 	{
@@ -79,11 +79,11 @@ void	read_prompt(t_data *data)
 			printf("%sCount token = %ld%s\n", YELLOW, token_count(data->input), NC);
 			printf("%s\n", data->input);
 			printf("%s###############	Print Tab	###############%s\n", GREEN, NC);
-			array = token_array(data->input);
-			fill_lst(array);
+			// array = token_array(data->input);
+			// fill_lst(array);
 			//check_builtin(data, array);
-			ft_free_array(&array);
-			free(data->input);
+			// ft_free_array(&array);
+			// free(data->input);
 		}
 		else
 			printf("%sInput invalide%s\n", BYRED, NC);
@@ -91,15 +91,15 @@ void	read_prompt(t_data *data)
 	free(data->input);
 }
 
-void	sighandler(int signum)
-{
-	signum++;
-	printf("\n$> ");
-}
+// void	sighandler(int signum)
+// {
+// 	signum++;
+// 	printf("\n$> ");
+// }
 
-void	sigfin(int signum)
-{
-	signum++;
-	rl_clear_history();
-	exit(0);
-}
+// void	sigfin(int signum)
+// {
+// 	signum++;
+// 	rl_clear_history();
+// 	exit(0);
+// }

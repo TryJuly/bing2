@@ -6,7 +6,7 @@
 /*   By: strieste <strieste@student.42.ch>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/03 11:15:21 by strieste          #+#    #+#             */
-/*   Updated: 2025/12/10 12:10:50 by strieste         ###   ########.fr       */
+/*   Updated: 2025/12/10 19:05:06 by strieste         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,14 @@
 # define LGREEN "\e[102m"
 # define BLUE "\e[34m"
 
+# define R_IN 1
+# define R_OUT 2
+# define R_HEREDOC 3
+# define R_APPEND 4
+
+
 typedef struct s_cmd t_cmd;
+typedef struct s_redir t_redir;
 
 typedef struct s_data
 {
@@ -49,13 +56,16 @@ typedef struct s_cmd
 	int				index;
 	char			*cmd;
 	char			**args;
-	char			*in;
-	char			*out;
-	int				append;
-	int				heredoc;
-	char			*pass_w;
+	struct s_redir	*redir;
 	struct s_cmd	*next;
 }	t_cmd;
+
+typedef struct s_redir
+{
+	int				type;
+	char			*file;
+	struct s_redir	*next;
+}	t_redir;
 
 void	read_prompt(t_data *data);
 void	print_tab(char **tab);
