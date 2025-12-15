@@ -6,22 +6,134 @@
 /*   By: strieste <strieste@student.42.ch>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/12 15:56:47 by strieste          #+#    #+#             */
-/*   Updated: 2025/12/13 09:43:47 by strieste         ###   ########.fr       */
+/*   Updated: 2025/12/15 15:41:29 by strieste         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "header.h"
 
+// static void	child(int fd_in, int fd_out, char **cmd, t_data *data);
+static int	is_valide_cmd(t_data *data, t_cmd **lst_cmd);
+
 int	exec_cmd(t_data *data)
 {
 	t_cmd	*tmp;
+	pid_t	child;
+	int		pipe_fd[2];
+	int		in;
+	int		out;
+	int		status;
 	
 	tmp = data->cmd_lst;
+	ft_bzero(pipe_fd, 3);
 	while (tmp)
 	{
-		
+		// if (is_valide_cmd(data, &data->cmd_lst))
+		// 	return (printf("%sCommand not found exec_cmd%s\n", RED, NC), 1);
+		if (tmp->redir)
+		{
+			while (tmp->redir)
+			{
+				if (tmp->redir->type == R_IN)
+				{
+					if (in)
+						in = close(in);
+					if (access(tmp->redir->file, F_OK))
+						return (printf("%sError invalide file: %s%s\n", RED, tmp->redir->file, NC), 1);
+					if (access(tmp->redir->file, R_OK))
+						return (printf("%sError access file: %s%s\n", RED, tmp->redir->file, NC), 1);
+					in = open(tmp->redir->file, O_RDONLY);
+					if (in < 0)
+						return (printf("Error open: %s\n", tmp->redir->file), 1);
+				}
+				else if (tmp->redir->type == R_OUT)
+				{
+					if (out)
+						out = close(out);		// check return close
+					out = open(tmp->redir->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+					if (out < 0)
+						return (printf("Error create: %s\n", tmp->redir->file), 1);
+				}
+				else if (tmp->redir->type == R_APPEND)
+				{
+					if (out)
+						out = close(out);		// check return close
+					out = open(tmp->redir->file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+					if (out < 0)
+						return (printf("Error create or open:%s\n", tmp->redir->file), 1);
+				}
+				tmp->redir = tmp->redir->next;
+			}
+		}
+		if (is_valide_cmd(data, &tmp))		// fd in and out need closed
+		{
+			printf("args 0:%s\n", tmp->args[0]);
+			printf("args 1:%s\n", tmp->args[1]);
+			printf("args 2: %s\n", tmp->args[2]);
+			printf("redir file: %s\n", tmp->redir->file);
+			printf("redir type: %d\n", tmp->redir->type);
+			return (printf("%sError command path 222:%s%s\n", RED, tmp->args[1], NC), 1);
+		}	// exit code 127 in function
+		if (tmp->next)
+		{
+			if (pipe(pipe_fd) == -1)
+				return (printf("%sError init PIPE\n%s", RED, NC), 1);	// Error Pipe init exit--code
+		}
+		child = fork();
+		if (child < 0)
+			return (printf("%sError Fork child%s\n", RED, NC), 1);
+		if (child == 0)			// child function for execve
+		{
+			dup2(in, STDIN_FILENO);
+			dup2(out, STDOUT_FILENO);
+			close(in);
+			close(out);
+			execve(tmp->args[0], tmp->args, data->envp);
+			perror("execve");
+			exit(1);
+		}
+		if (tmp->next)
+		{
+			pipe_fd[1] = close(pipe_fd[1]);
+			in = pipe_fd[0];
+			waitpid(child, &status, 0);		// status check for return child
+		}
+		else if (!tmp->next)
+		{
+			if (pipe_fd[0])
+				pipe_fd[0] = close(pipe_fd[0]);
+			in = close(in);
+			out = close(out);
+			waitpid(child, &status, 0);		// status check for return child
+		}
+		tmp = tmp->next;
 	}
+	return (1);
 }
+
+static int	is_valide_cmd(t_data *data, t_cmd **lst_cmd)
+{
+	char	*path_cmd;
+	
+	path_cmd = find_path((*lst_cmd)->args[0], data->path);
+	if (!path_cmd)
+		return (printf("%sError path_cmd 120%s\n", RED, NC), 1);	// Error find command exit --- code 127 need free data 
+	free((*lst_cmd)->args[0]);
+	(*lst_cmd)->args[0] = path_cmd;
+	return (0);
+}
+
+// static void	child(int fd_in, int fd_out, char **cmd, t_data *data)
+// {
+// 	dup2(fd_in, STDIN_FILENO);
+// 	dup2(fd_out, STDOUT_FILENO);
+// 	close(fd_in);
+// 	close(fd_out);
+// 	execve(cmd[0], cmd, data->envp);
+// 	perror("execve");
+// 	ft_clean_struct(data);
+// 	exit(1); // Need To FREE
+// }
 
 // void	pipex(t_data *data)
 // {
@@ -44,7 +156,7 @@ int	exec_cmd(t_data *data)
 // 	close(pipe_fd[1]);
 // 	child2 = fork();
 // 	if (child2 < 0)
-// 		return ;	// Error FORK SEE
+// 		return ;
 // 	if (child2 == 0)
 // 	{
 // 		close(pipe_fd[1]);
@@ -53,11 +165,10 @@ int	exec_cmd(t_data *data)
 // 	}
 // 	close(pipe_fd[0]);
 // 	waitpid(child1, NULL, 0);
-// 	waitpid(child2, NULL, 0);
 // 	return ;
 // }
 
-// void	child(int fd_in, int fd_out, char **cmd, t_data *data)
+// static void	child(int fd_in, int fd_out, char **cmd, t_data *data)
 // {
 // 	dup2(fd_in, STDIN_FILENO);
 // 	dup2(fd_out, STDOUT_FILENO);
@@ -70,3 +181,37 @@ int	exec_cmd(t_data *data)
 // 	close(data->fd_out);
 // 	exit(1); // Need To FREE
 // }
+
+
+// while (tmp->redir)
+// 			{
+// 				if (tmp->redir->type == R_IN)
+// 				{
+// 					if (in)
+// 						close(in);
+// 					if (access(tmp->redir->file, F_OK))
+// 						return (printf("%sError invalide file: %s%s\n", RED, tmp->redir->file, NC), 1);
+// 					if (access(tmp->redir->file, R_OK))
+// 						return (printf("%sError access file: %s%s\n", RED, tmp->redir->file, NC), 1);
+// 					in = open(tmp->redir->file, O_RDONLY);
+// 					if (in < 0)
+// 						return (printf("Error open: %s\n", tmp->redir->file), 1);
+// 				}
+// 				if (tmp->redir->type == R_OUT)
+// 				{
+// 					if (out)
+// 						close(out);
+// 					out = open(tmp->redir->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+// 					if (out < 0)
+// 						return (printf("Error create: %s\n", tmp->redir->file), 1);
+// 				}
+// 				if (tmp->redir->type == R_APPEND)
+// 				{
+// 					if (out)
+// 						close(out);
+// 					out = open(tmp->redir->file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+// 					if (out < 0)
+// 						return (printf("Error create or open:%s\n", tmp->redir->file), 1);
+// 				}
+// 				tmp->redir = tmp->redir->next;
+// 			}

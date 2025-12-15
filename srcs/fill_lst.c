@@ -6,7 +6,7 @@
 /*   By: strieste <strieste@student.42.ch>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/09 12:58:23 by strieste          #+#    #+#             */
-/*   Updated: 2025/12/12 14:49:56 by strieste         ###   ########.fr       */
+/*   Updated: 2025/12/15 11:36:24 by strieste         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,14 +134,20 @@ void	add_args_node(char *argument, t_cmd *current)
 	count = 0;
 	if (!current->args[0])
 	{
-		current->args[0] = ft_strdup(argument);
+		if (argument[0] == '"' || argument[0] == '\'')
+			current->args[0] = ft_strtrim(argument, "\"'");
+		else
+			current->args[0] = ft_strdup(argument);
 		current->args[1] = NULL;
 	}
 	else
 	{
 		while (current->args[count])
 			count++;
-		current->args[count++] = ft_strdup(argument);
+		if (argument[0] == '"' || argument[0] == '\'')
+			current->args[0] = ft_strtrim(argument, "\"'");
+		else
+			current->args[count++] = ft_strdup(argument);
 		current->args[count] = 0;
 	}
 	return ;

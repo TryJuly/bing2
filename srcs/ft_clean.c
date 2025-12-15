@@ -6,7 +6,7 @@
 /*   By: strieste <strieste@student.42.ch>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/04 08:38:46 by strieste          #+#    #+#             */
-/*   Updated: 2025/12/12 16:25:39 by strieste         ###   ########.fr       */
+/*   Updated: 2025/12/15 09:41:01 by strieste         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ static void	ft_clear_lst(t_cmd **lst)
 			}
 		}
 		free((*lst)->cmd);
-		ft_free_array((*lst)->args);
+		ft_free_array(&(*lst)->args);
 		free(*lst);
 		(*lst) = s_p;
 	}

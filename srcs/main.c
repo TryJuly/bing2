@@ -6,7 +6,7 @@
 /*   By: strieste <strieste@student.42.ch>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/03 09:58:33 by cbezenco          #+#    #+#             */
-/*   Updated: 2025/12/12 10:54:40 by strieste         ###   ########.fr       */
+/*   Updated: 2025/12/15 15:44:36 by strieste         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,10 @@ void	check_builtin(t_data *data, char **array)
 
 void	read_prompt(t_data *data)
 {
+	size_t	count;
+	size_t	len;
+	t_redir *tmp;
 	char	**array;
-	t_cmd	*lst;
 	
 	while (1)
 	{
@@ -88,10 +90,30 @@ void	read_prompt(t_data *data)
 		printf("%s###############	Print Tab	###############%s\n", GREEN, NC);
 		new_expand_var(data);
 		array = token_array(data->input);
-		print_tab(array);
-		lst = fill_lst(array);
-		print_lst(lst);
+		data->cmd_lst = fill_lst(array);
+
+		len = 0;
+		while (data->cmd_lst)
+		{
+			count = 0;
+			while (data->cmd_lst->args[count])
+			{
+				printf("%sArgument %ld: %s%s\n", GREEN, count, data->cmd_lst->args[count], NC);
+				count++;
+			}
+			tmp = data->cmd_lst->redir;
+			while (tmp)
+			{
+				printf("%sFile : :%s:%s\n", GREEN, tmp->file, NC);
+				printf("%sFile type : %d%s\n", GREEN, tmp->type, NC);
+				tmp = tmp->next;
+			}
+			data->cmd_lst = data->cmd_lst->next;
+			len++;
+		}
+		// print_lst(data->cmd_lst);
 		check_builtin(data, array);
+		exec_cmd(data);
 		//ft_free_array(&array);
 		//free(data->input);
 	}
@@ -100,14 +122,12 @@ void	read_prompt(t_data *data)
 
 void	sighandler(int signum)
 {
-	(void)signum;
 	signum++;
 	printf("\n$> ");
 }
 
 void	sigfin(int signum)
 {
-	(void)signum;
 	signum++;
 	clear_history();
 	exit(0);
