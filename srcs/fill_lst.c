@@ -6,7 +6,7 @@
 /*   By: strieste <strieste@student.42.ch>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/09 12:58:23 by strieste          #+#    #+#             */
-/*   Updated: 2025/12/15 11:36:24 by strieste         ###   ########.fr       */
+/*   Updated: 2025/12/16 10:10:52 by strieste         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,25 +55,28 @@ void	print_lst(t_cmd *lst)
 	size_t	count;
 	size_t	len;
 	t_redir	*tmp;
+	t_cmd	*t;
 
 	len = 0;
-	while (lst)
+	t = lst;
+	while (t)
 	{
 		count = 0;
-		while (lst->args[count])
+		printf("%sArgs is : %s\n", YELLOW, NC);
+		while (t->args[count])
 		{
-			printf("%sArgument %ld: %s%s\n", GREEN, count, lst->args[count], NC);
+			printf("%sArgument %ld: %s%s\n", GREEN, count, t->args[count], NC);
 			count++;
 		}
 		printf("%sPrint file redir%s\n", YELLOW, NC);
-		tmp = lst->redir;
+		tmp = t->redir;
 		while (tmp)
 		{
-			printf("%sFile : :%s:%s\n", GREEN, tmp->file, NC);
+			printf("%sFile : %s%s\n", GREEN, tmp->file, NC);
 			printf("%sFile type : %d%s\n", GREEN, tmp->type, NC);
 			tmp = tmp->next;
 		}
-		lst = lst->next;
+		t = t->next;
 		len++;
 	}
 	printf("Numbers of node : %ld\n", len);
@@ -125,6 +128,7 @@ static void	add_redir_node(char *redir, char *file, t_cmd *current)
 			tmp = tmp->next;
 		tmp->next = new;
 	}
+	return ;
 }
 
 void	add_args_node(char *argument, t_cmd *current)
@@ -145,7 +149,7 @@ void	add_args_node(char *argument, t_cmd *current)
 		while (current->args[count])
 			count++;
 		if (argument[0] == '"' || argument[0] == '\'')
-			current->args[0] = ft_strtrim(argument, "\"'");
+			current->args[count++] = ft_strtrim(argument, "\"'");
 		else
 			current->args[count++] = ft_strdup(argument);
 		current->args[count] = 0;

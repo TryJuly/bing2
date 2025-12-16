@@ -6,7 +6,7 @@
 /*   By: strieste <strieste@student.42.ch>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/03 09:58:33 by cbezenco          #+#    #+#             */
-/*   Updated: 2025/12/15 15:44:36 by strieste         ###   ########.fr       */
+/*   Updated: 2025/12/16 10:43:41 by strieste         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,9 +74,6 @@ void	check_builtin(t_data *data, char **array)
 
 void	read_prompt(t_data *data)
 {
-	size_t	count;
-	size_t	len;
-	t_redir *tmp;
 	char	**array;
 	
 	while (1)
@@ -84,36 +81,16 @@ void	read_prompt(t_data *data)
 		data->input = readline("$> ");
 		if (!ft_strncmp(data->input, "", 1))
 			continue ;
-		printf("%s###############	Print	###############%s\n", GREEN, NC);
-		printf("%sCount token = %ld%s\n", YELLOW, token_count(data->input), NC);
-		printf("%s\n", data->input);
-		printf("%s###############	Print Tab	###############%s\n", GREEN, NC);
+		// printf("%s###############	Print	###############%s\n", GREEN, NC);
+		// printf("%sCount token = %ld%s\n", YELLOW, token_count(data->input), NC);
+		// printf("String: %s\n", data->input);
+		// printf("%s###############	Print Tab	###############%s\n", GREEN, NC);
 		new_expand_var(data);
 		array = token_array(data->input);
 		data->cmd_lst = fill_lst(array);
-
-		len = 0;
-		while (data->cmd_lst)
-		{
-			count = 0;
-			while (data->cmd_lst->args[count])
-			{
-				printf("%sArgument %ld: %s%s\n", GREEN, count, data->cmd_lst->args[count], NC);
-				count++;
-			}
-			tmp = data->cmd_lst->redir;
-			while (tmp)
-			{
-				printf("%sFile : :%s:%s\n", GREEN, tmp->file, NC);
-				printf("%sFile type : %d%s\n", GREEN, tmp->type, NC);
-				tmp = tmp->next;
-			}
-			data->cmd_lst = data->cmd_lst->next;
-			len++;
-		}
 		// print_lst(data->cmd_lst);
-		check_builtin(data, array);
 		exec_cmd(data);
+		check_builtin(data, array);
 		//ft_free_array(&array);
 		//free(data->input);
 	}
